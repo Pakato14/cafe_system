@@ -1,0 +1,19 @@
+{
+  "name": "cafe_system",
+  "version": "1.0.0",
+  "description": "sistema de cafe",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Pakato14/cafe_system.git"
+  },
+  "author": "Daniel Araújo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Pakato14/cafe_system/issues"
+  },
+  "homepage": "https://github.com/Pakato14/cafe_system#readme"
+}
