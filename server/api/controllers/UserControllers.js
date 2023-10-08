@@ -81,7 +81,7 @@ class UserControllers {
             const procuraUser = await database.User.findOne({
                 where: { email: user.email }
             })
-            if(!error){
+            if(procuraUser){
                 if(procuraUser.length <= 0){
                     return res.status(200).json({message: "Password sent successfully to you email."})
                 }
@@ -105,11 +105,11 @@ class UserControllers {
 
             }
             else{
-                return res.status(500).json(error)
+                return res.status(500).send({ message: 'Usuário não encontrado!'})
             }
 
         }catch(error){
-            res.send({ message: 'Problemas ao realizar login!' })
+            return res.status(500).json(error.message)
         }
     }
 
