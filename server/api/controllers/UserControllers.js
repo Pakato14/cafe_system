@@ -2,8 +2,6 @@ const database = require('../models')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer');
 require('dotenv').config()
-var auth = require('../services/authentication');
-var checkRole = require('../services/checkRoles');
 
 class UserControllers {
 

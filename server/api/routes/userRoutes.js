@@ -11,7 +11,7 @@ router.post('/forgotPassword', UserController.forgot)
 router.get('/allUser', auth.authenticateToken, checkRole.checkRole, UserController.pegaUser)
 router.patch('/update/:id', auth.authenticateToken, checkRole.checkRole, UserController.update)
 router.get('/checkToken', auth.authenticateToken, UserController.checkToken)
-router.post('/changePassword', UserController.changePassword)
+router.post('/changePassword', auth.authenticateToken, UserController.changePassword)
 
 
 module.exports = router
