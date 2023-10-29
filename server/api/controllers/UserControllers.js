@@ -2,6 +2,8 @@ const database = require('../models')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer');
 require('dotenv').config()
+var auth = require('../services/authentication');
+var checkRole = require('../services/checkRoles');
 
 class UserControllers {
 
@@ -45,6 +47,23 @@ class UserControllers {
         catch (error){
             return res.status(500).json({message: 'Usuário não autenticado!'})
         }
+    }
+
+    static async update(req, res){
+        const { id } = req.params;
+        let user = req.body;
+        try {
+            await database.User.update(user, { where: { id: Number(id) }})
+            const userUpdate = await database.User.findOne( { where: {id: Number(id) }})
+            return res.status(200).json(userUpdate)
+
+        }catch (error){
+            return res.status(500).json(error.message)
+        }
+    }
+
+    static async checkToken(req, res){
+        return res.status(200).json({message:"true"})
     }
 
     static async login(req, res){
@@ -111,6 +130,25 @@ class UserControllers {
         }catch(error){
             return res.status(500).json(error.message)
         }
+    }
+
+    static async changePassword (req, res){
+        const user = req.body;
+        try{
+            const verificaUser = await database.User.findOne({
+                where: { email: user.email }
+            })
+            if(!verificaUser){
+                return res.status(404).send({ message: 'User not found!'})
+            }
+            let newPassword = user.password
+            await database.User.update({ password: newPassword }, { where: { email: user.email }})
+            res.send({message: 'Senha alterada com sucesso!'})
+
+        }catch (error){
+            return res.status(400).json({message: "Something went wrong. Please try again later"})
+        }
+
     }
 
 }
