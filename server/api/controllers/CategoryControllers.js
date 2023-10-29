@@ -30,8 +30,8 @@ class CategoryControllers {
         let category = req.body;
         try {
             await database.Category.update(category, { where: { id: Number(id) }})
-            const categoryUpdate = await database.Category.findOne( { where: {id: Number(id) }})
-            return res.status(200).json(categoryUpdate)
+            await database.Category.findOne( { where: {id: Number(id) }})
+            return res.status(200).json({message: "Category updated successfully"})
 
         }catch (error){
             return res.status(500).json(error.message)
@@ -39,6 +39,5 @@ class CategoryControllers {
     }
 
 }
-
 
 module.exports = CategoryControllers
