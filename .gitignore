@@ -1,3 +1,7 @@
 server/node_modules/*
 server/.env
-frontend/*
+frontend/node_modules/*
+frontend/.browserslistrc
+frontend/.gitignore
+frontend/.editorconfig
+frontend/.angular/*
