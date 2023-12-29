@@ -1,92 +1,101 @@
 const database = require('../models')
-const jwt = require('jsonwebtoken')
-const nodemailer = require('nodemailer');
-require('dotenv').config()
+let ejs = require('ejs')
+let pdf = require('html-pdf');
+let path = require('path');
+var fs = require('fs');
+var uuid = require('uuid');
 
+class BillControllers {    
 
-class BillControllers {
-
-    static async addProduct(req, res){
-        const newProduct = req.body;
+    static async generateReport(req, res){
+        const generatedUuid = uuid.v1();
+        const orderDetails = req.body;
+        var productDetailsReport = JSON.parse(orderDetails.productDetails);
+        orderDetails.uuid = generatedUuid;
         try{
-            await database.Product.create(newProduct)
+            const report = await database.Bill.create(orderDetails)
+            //console.log("dirName", __dirname)
+            if(!report){
+                ejs.renderFile(path.join(__dirname,'',"report.ejs"),{productDetails:productDetailsReport,name: orderDetails.name,email:orderDetails.email,contactNumber:orderDetails.contactNumber,paymentMethod:orderDetails.paymentMethod,totalAmount:orderDetails.totalAmount},(err, results)=>{
+                    if(err){
+                        console.log("err", err)
+                        console.log("dirName", __dirname)
+                        return res.status(500).json(err);
+                        
+                    }else{
+                        pdf.create(results).toFile('./generated_pdf/' + generatedUuid + ".pdf", function (err, data){
+                            if(err){
+                                console.log("err", err);
+                                return res.status(500).json(err);
+                            }else {
+                                return res.status(200).json({ uuid: generatedUuid })
+                            }
+                        })
+                    }
+                })
+            }
             return res.status(200).json({ message: 'Product added successfully'})
         } catch (error){
             return res.status(500).json(error.message);
         }
     }
 
-    static async takeProduct(req, res){
-        try{
-            const pegarProduto = await database.Product.findAll()
-            return res.status(200).json(pegarProduto)
-        }catch (error){
-            return res.status(500).json(error)
+    static async getPdf(req, res){
+        const orderDetails = req.body;
+        const pdfPath = './generated_pdf/' + orderDetails.uuid + ".pdf";
+        if(fs.existsSync(pdfPath)){
+            res.contentType("application/pdf");
+            fs.createReadStream(pdfPath).pipe(res);
+        }else {
+            var productDetailsReport = JSON.parse(orderDetails.productDetails)
+
+            ejs.renderFile(path.join(__dirname,'',"report.ejs"),{productDetails:productDetailsReport,name: orderDetails.name,email:orderDetails.email,contactNumber:orderDetails.contactNumber,paymentMethod:orderDetails.paymentMethod,totalAmount:orderDetails.totalAmount},(err, results)=>{
+                if(err){
+                    console.log("err", err)
+                    console.log("dirName", __dirname)
+                    return res.status(500).json(err);
+                    
+                }else{
+                    pdf.create(results).toFile('./generated_pdf/' + orderDetails.uuid + ".pdf", function (err, data){
+                        if(err){
+                            console.log("err", err);
+                            return res.status(500).json(err);
+                        }else {
+                            res.contentType("application/pdf");
+                            fs.createReadStream(pdfPath).pipe(res);
+                        }
+                    })
+                }
+            })
         }
     }
 
-    static async takeByCategory(req, res){
-        const { id } = req.params;
+    static async getBills (req, res, next){
         try{
-            const byCategory = await database.Product.findOne({
-                order: ["id"],
-                where: { category_id: Number(id)},
-                include: [
-                    {
-                        association: "ass_product_category",
-                        where: database.Product.category_id = database.Category.id,
-                        attributes: ["name"]
-                    }
-                ]
-            });
-            return res.status(200).json(byCategory);
-        }catch (error) {
-            return res.status(500).json(error)
+            const getBill = await database.Bill.findAll({
+                order: ["id"]
+            })
+            return res.status(200).json(getBill)
         }
+        catch(error){
+            return res.status(500).json(error.message)
+        }
+        
     }
 
-    static async takeById(req, res){
+    static async deleteBill(req, res){
         const { id } = req.params;
+        const delet = req.body;
+        
         try{
-            const byCategory = await database.Product.findOne({
-                order: ["id"],
-                where: { id: Number(id)},
-                include: [
-                    {
-                        association: "ass_product_category",
-                        where: database.Product.category_id = database.Category.id,
-                        attributes: ["name"]
-                    }
-                ]
-            });
-            return res.status(200).json(byCategory);
-        }catch (error) {
-            return res.status(500).json(error)
-        }
-    }
-
-    static async atualizaProduto(req, res){
-        const { id } = req.params;
-        let product = req.body;
-        try {
-            await database.Product.update(product, { where: { id: Number(id) }})
-            await database.Product.findOne( { where: {id: Number(id) }})
-            return res.status(200).json({message: "Product updated successfully"})
-
-        }catch (error){
+            await database.Bill.destroy({ where: { id: Number(id) }})
+            return res.status(200).json({ mensagem: `Bill deleted Successfully`})
+        }catch(erro){
             return res.status(500).json(error.message)
         }
     }
 
-    static async deleteProduct(req, res){
-        const { id } = req.params
-        try {
-            await database.Product.destroy( { where: { id: Number(id)}})
-            return res.status(200).json({message: "Product Deleted Successfully"});
-        }catch (error){
-            return res.status(500).json(error.message)
-        }
-    }
+    
 
 }
 

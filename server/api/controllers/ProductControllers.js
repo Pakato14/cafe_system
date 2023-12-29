@@ -28,7 +28,7 @@ class ProductControllers {
     static async takeByCategory(req, res){
         const { id } = req.params;
         try{
-            const byCategory = await database.Product.findOne({
+            const byCategory = await database.Product.findAll({
                 order: ["id"],
                 where: { category_id: Number(id)},
                 include: [

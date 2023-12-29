@@ -71,14 +71,18 @@ class UserControllers {
             const verificaUser = await database.User.findOne({
                 where: { email: user.email }
             })
+            console.log('status', verificaUser.status)
+            console.log('verificaUser', verificaUser)
 
-            if(!verificaUser){
+            if(!verificaUser.email){
                 return res.status(401).json({message:"Incorrect Username or Password"})
             }
-            else if(user.status === 'false'){
+            else if(verificaUser.status !== 'true'){
+                
                 return res.status(401).json({message: "Wait for Admin Approval"})
             }
-            else if(user.password == verificaUser.password){
+            else if(user.password === verificaUser.password){
+                console.log('verificaUser', verificaUser)
                 const response = {email: verificaUser.email, role: verificaUser.role}
                 const accessToken = jwt.sign(response, process.env.ACCESS_TOKEN, { expiresIn: '8h'})
                 res.status(200).json({ token: accessToken});
